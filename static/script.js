@@ -42,6 +42,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Parse the result and display outputs
                 parseAndDisplayResult(result.result);
                 outputSection.classList.remove('hidden');
+                
+                // Show the coffee button after successful generation
+                const coffeeSection = document.querySelector('.coffee-section');
+                if (coffeeSection) {
+                    coffeeSection.classList.remove('hidden');
+                }
             } else {
                 alert(result.error || '處理時發生錯誤');
             }

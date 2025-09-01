@@ -33,6 +33,9 @@ header h1 {
     font-weight: 300;
     color: #1d1d1f;
     letter-spacing: -0.02em;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e5e5e7;
+    display: inline-block;
 }
 
 /* Input Section */
@@ -162,6 +165,23 @@ textarea:focus {
 
 .submit-btn:active {
     transform: translateY(0);
+}
+
+/* Coffee Button Section */
+.coffee-section {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.coffee-section img {
+    width: 200px;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+.coffee-section img:hover {
+    transform: scale(1.05);
 }
 
 /* Loading */
