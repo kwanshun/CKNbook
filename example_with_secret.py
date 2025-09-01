@@ -28,3 +28,4 @@ def get_preference():
 # What happens in browser:
 # Cookie: session=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9... (ENCRYPTED & SIGNED)
 # ✅ Attacker cannot read or modify this cookie
+

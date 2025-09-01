@@ -29,3 +29,4 @@ echo "   Server will be available at: http://localhost:5001"
 echo "   Press Ctrl+C to stop"
 
 gunicorn --config gunicorn.conf.py main_production:app
+

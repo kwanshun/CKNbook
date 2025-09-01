@@ -55,3 +55,4 @@ echo "📋 Next steps:"
 echo "   1. Test your app at the URL above"
 echo "   2. Configure custom domain (optional)"
 echo "   3. Set up monitoring and logging"
+
