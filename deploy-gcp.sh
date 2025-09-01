@@ -13,7 +13,7 @@ fi
 
 # Set variables
 PROJECT_ID=""
-REGION="us-central1"
+REGION="asia-southeast1"  # Changed default to asia-southeast1
 SERVICE_NAME="tone-toner"
 
 # Get project ID if not set
@@ -39,6 +39,30 @@ read -s GEMINI_API_KEY
 echo "🔑 Please enter a secret key for Flask (64+ characters):"
 read -s FLASK_SECRET_KEY
 
+# Safety check: Verify environment variables are set
+if [ -z "$GEMINI_API_KEY" ] || [ -z "$FLASK_SECRET_KEY" ]; then
+    echo "❌ ERROR: Both API_KEY and SECRET_KEY must be provided!"
+    exit 1
+fi
+
+echo "✅ Environment variables verified"
+
+# Check if service exists and has environment variables
+echo "🔍 Checking existing service configuration..."
+if gcloud run services describe $SERVICE_NAME --region=$REGION &>/dev/null; then
+    echo "📋 Current environment variables:"
+    gcloud run services describe $SERVICE_NAME --region=$REGION --format="value(spec.template.spec.containers[0].env[].name,spec.template.spec.containers[0].env[].value)" | grep -E "(API_KEY|SECRET_KEY)" || echo "No API_KEY or SECRET_KEY found"
+    
+    echo "⚠️  WARNING: Updating service will REPLACE ALL environment variables!"
+    echo "   Make sure to set ALL required variables together."
+    read -p "Continue? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "❌ Deployment cancelled"
+        exit 1
+    fi
+fi
+
 # Build and deploy using Cloud Build
 echo "🏗️  Building and deploying with Cloud Build..."
 gcloud builds submit \
@@ -55,4 +79,7 @@ echo "📋 Next steps:"
 echo "   1. Test your app at the URL above"
 echo "   2. Configure custom domain (optional)"
 echo "   3. Set up monitoring and logging"
+echo ""
+echo "🔒 IMPORTANT: Verify environment variables are set:"
+gcloud run services describe $SERVICE_NAME --region=$REGION --format="value(spec.template.spec.containers[0].env[].name,spec.template.spec.containers[0].env[].value)" | grep -E "(API_KEY|SECRET_KEY)" || echo "❌ Environment variables missing!"
 
