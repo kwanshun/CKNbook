@@ -1,4 +1,4 @@
-# Tone-Toner
+# CKNbook
 
 A Flask-based web application that uses Google's Gemini AI to rewrite text in different tones and languages.
 
@@ -31,11 +31,11 @@ python main.py
 
 ```bash
 # ✅ CORRECT - Set all variables at once
-gcloud run services update tone-toner --region=asia-southeast1 \
+gcloud run services update cknbook --region=asia-southeast1 \
   --set-env-vars API_KEY="your-key",SECRET_KEY="your-secret"
 
 # ❌ WRONG - This will overwrite existing variables
-gcloud run services update tone-toner --region=asia-southeast1 \
+gcloud run services update cknbook --region=asia-southeast1 \
   --set-env-vars API_KEY="your-key"
 ```
 
@@ -45,7 +45,7 @@ gcloud run services update tone-toner --region=asia-southeast1 \
 ./deploy-gcp.sh
 
 # Or deploy manually
-gcloud run deploy tone-toner --source . --region asia-southeast1 --allow-unauthenticated
+gcloud run deploy cknbook --source . --region asia-southeast1 --allow-unauthenticated
 ```
 
 ## Troubleshooting
@@ -68,20 +68,20 @@ gcloud run deploy tone-toner --source . --region asia-southeast1 --allow-unauthe
 
 ```bash
 # Check service status
-gcloud run services describe tone-toner --region=asia-southeast1
+gcloud run services describe cknbook --region=asia-southeast1
 
 # Check environment variables
-gcloud run services describe tone-toner --region=asia-southeast1 \
+gcloud run services describe cknbook --region=asia-southeast1 \
   --format="value(spec.template.spec.containers[0].env[].name,spec.template.spec.containers[0].env[].value)"
 
 # Check logs
-gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=tone-toner" --limit=10
+gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=cknbook" --limit=10
 ```
 
 ## Project Structure
 
 ```
-tone-toner/
+cknbook/
 ├── main.py                 # Development server
 ├── main_production.py      # Production server with rate limiting
 ├── deploy-gcp.sh          # Deployment script
