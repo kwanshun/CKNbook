@@ -74,8 +74,9 @@ def validate_input(paragraph, tone, language):
     if language not in valid_languages:
         return False, "無效的語言選項"
     
-    # Basic content filtering
-    if re.search(r'[^\w\s\u4e00-\u9fff\u3000-\u303f\uff00-\uffef.,!?;:()"\'-]', paragraph):
+    # Basic content filtering - allow common punctuation and Chinese characters
+    # Allow: word chars, whitespace, CJK chars, common punctuation including smart quotes
+    if re.search(r'[^\w\s\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\u2000-\u206f\u2010-\u2027\u2030-\u205f.,!?;:()""\'\-–—/\\&%@#*+<>=[\]{}|~`]', paragraph):
         return False, "包含不允許的字元"
     
     return True, ""
