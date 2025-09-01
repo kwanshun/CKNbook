@@ -1,0 +1,295 @@
+/* Apple-inspired design with 呼吸感 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: #1d1d1f;
+    letter-spacing: -0.02em;
+}
+
+/* Input Section */
+.input-section {
+    margin-bottom: 40px;
+}
+
+.input-section label {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #515154;
+    margin-bottom: 12px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 16px;
+    border: 2px solid #e5e5e7;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #007aff;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* Option Sections */
+.option-section {
+    margin-bottom: 35px;
+}
+
+.section-label {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #515154;
+    margin-bottom: 16px;
+}
+
+.option-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: auto;
+}
+
+.option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    background: #f8f9fa;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 36px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.option-item:hover {
+    background: #e8f4fd;
+    border-color: #007aff;
+}
+
+.option-item input[type="radio"] {
+    margin-right: 8px;
+    width: 18px;
+    height: 18px;
+    accent-color: #007aff;
+}
+
+.option-item span {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: #1d1d1f;
+}
+
+.option-item:has(input:checked) {
+    background: #007aff;
+    border-color: #007aff;
+    color: white;
+}
+
+.option-item:has(input:checked) span {
+    color: white;
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 30px;
+}
+
+.submit-btn:hover {
+    background: #0056cc;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+/* Loading */
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e5e5e7;
+    border-top: 3px solid #007aff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Output Section */
+.output-section {
+    margin-top: 40px;
+}
+
+.output-box {
+    background: #f8f9fa;
+    border: 1px solid #e5e5e7;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e7;
+}
+
+.output-label {
+    font-weight: 600;
+    color: #1d1d1f;
+    font-size: 1rem;
+}
+
+.copy-btn {
+    padding: 6px 12px;
+    background: transparent;
+    color: #007aff;
+    border: 1px solid #007aff;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+    background: #007aff;
+    color: white;
+}
+
+.output-content {
+    padding: 20px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #1d1d1f;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .container {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .option-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .option-row {
+        gap: 6px;
+    }
+    
+    .option-item {
+        padding: 6px 10px;
+        font-size: 0.9rem;
+        min-height: 36px;
+    }
+    
+    .option-item span {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .option-row {
+        flex-wrap: nowrap;
+        gap: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2px;
+    }
+    
+    .option-item {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+        min-height: 32px;
+        flex-shrink: 0;
+    }
+    
+    .option-item span {
+        font-size: 0.8rem;
+    }
+}

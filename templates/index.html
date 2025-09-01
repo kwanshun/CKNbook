@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tone-Toner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TONE-TONER</h1>
+        </header>
+
+        <form id="toneForm">
+            <!-- Input Section -->
+            <div class="input-section">
+                <label for="paragraph">請輸入您的段落</label>
+                <textarea id="paragraph" name="paragraph" placeholder="請輸入您想要調整的段落..." required></textarea>
+            </div>
+
+            <!-- Tone Selection -->
+            <div class="option-section">
+                <label class="section-label">語調選擇：</label>
+                <div class="option-row">
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="活潑輕鬆" checked required>
+                        <span>輕鬆</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="溫暖" required>
+                        <span>溫暖</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="專業" required>
+                        <span>專業</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="謙虛" required>
+                        <span>謙虛</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="幽默" required>
+                        <span>幽默</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Language Selection -->
+            <div class="option-section">
+                <label class="section-label">語言選擇：</label>
+                <div class="option-row">
+                    <label class="option-item">
+                        <input type="radio" name="language" value="廣東話" checked required>
+                        <span>廣東話</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="language" value="普通話" required>
+                        <span>普通話</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="language" value="英文" required>
+                        <span>英文</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="language" value="西班牙文" required>
+                        <span>西班牙文</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn">生成文本</button>
+        </form>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>正在生成中...</p>
+        </div>
+
+        <!-- Output Section -->
+        <div id="outputSection" class="output-section hidden">
+            <div class="output-box">
+                <div class="output-header">
+                    <span class="output-label">選項1:</span>
+                    <button class="copy-btn" onclick="copyText('output1')">複製</button>
+                </div>
+                <div class="output-content" id="output1"></div>
+            </div>
+
+            <div class="output-box">
+                <div class="output-header">
+                    <span class="output-label">選項2:</span>
+                    <button class="copy-btn" onclick="copyText('output2')">複製</button>
+                </div>
+                <div class="output-content" id="output2"></div>
+            </div>
+
+            <div class="output-box">
+                <div class="output-header">
+                    <span class="output-label">選項3:</span>
+                    <button class="copy-btn" onclick="copyText('output3')">複製</button>
+                </div>
+                <div class="output-content" id="output3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
