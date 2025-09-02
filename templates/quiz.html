@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選擇題✅ - CKNbook</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ range(1, 1000) | random }}">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <a href="/" class="nav-link">1</a>
+            <a href="/quiz" class="nav-link active">2</a>
+            <a href="/effective-reply" class="nav-link">3</a>
+        </nav>
+
+        <header>
+            <h1>選擇題 ✅</h1>
+        </header>
+
+        <!-- Quiz Generation Section -->
+        <div class="regen-section">
+            <div class="day-selector">
+                <label for="daySelect">選擇天數：</label>
+                <select id="daySelect" name="day">
+                    <option value="">請選擇...</option>
+                    <option value="1">第1天</option>
+                    <option value="2">第2天</option>
+                    <option value="3">第3天</option>
+                    <option value="4">第4天</option>
+                    <option value="5">第5天</option>
+                    <option value="6">第6天</option>
+                    <option value="7">第7天</option>
+                    <option value="8">第8天</option>
+                    <option value="9">第9天</option>
+                    <option value="10">第10天</option>
+                    <option value="11">第11天</option>
+                    <option value="12">第12天</option>
+                    <option value="13">第13天</option>
+                    <option value="14">第14天</option>
+                    <option value="15">第15天</option>
+                    <option value="16">第16天</option>
+                    <option value="17">第17天</option>
+                    <option value="18">第18天</option>
+                    <option value="19">第19天</option>
+                    <option value="20">第20天</option>
+                    <option value="21">第21天</option>
+                </select>
+                <button type="button" class="regen-btn" onclick="generateQuiz()">重新生成</button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>正在生成測驗題...</p>
+        </div>
+
+        <!-- Quiz Output Section -->
+        <div id="quizOutput" class="quiz-output hidden">
+            <!-- Quiz Question (Combined with Title) -->
+            <div class="content-container">
+                <div class="content-box">
+                    <div class="content-header">
+                        <span class="content-label">測驗問題</span>
+                        <button class="copy-btn" onclick="copyContent('quizQuestion')">複製</button>
+                    </div>
+                    <div class="content-content" id="quizQuestion"></div>
+                </div>
+            </div>
+
+            <!-- Quiz Answer -->
+            <div class="content-container">
+                <div class="content-box">
+                    <div class="content-header">
+                        <span class="content-label">參考答案</span>
+                        <button class="copy-btn" onclick="copyContent('quizAnswer')">複製</button>
+                    </div>
+                    <div class="content-content" id="quizAnswer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buy Me a Coffee Button -->
+        <div id="coffeeSection" class="coffee-section hidden">
+            <a href="https://www.buymeacoffee.com/awks" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+        </div>
+    </div>
+
+    <script>
+        // Auto-generate quiz when day is selected
+        document.getElementById('daySelect').addEventListener('change', function() {
+            if (this.value) {
+                generateQuiz();
+            }
+        });
+
+        function generateQuiz() {
+            const daySelect = document.getElementById('daySelect');
+            const selectedDay = daySelect.value;
+            
+            if (!selectedDay) {
+                alert('請先選擇天數');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('quizOutput').classList.add('hidden');
+            document.getElementById('coffeeSection').classList.add('hidden');
+
+            // Send request to generate quiz
+            fetch('/generate-quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    day: selectedDay
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').classList.add('hidden');
+                
+                if (data.error) {
+                    alert('錯誤: ' + data.error);
+                    return;
+                }
+
+                // Parse the AI response and display it
+                displayQuiz(data.result);
+            })
+            .catch(error => {
+                document.getElementById('loading').classList.add('hidden');
+                console.error('Error:', error);
+                alert('生成測驗題時發生錯誤');
+            });
+        }
+
+        function displayQuiz(aiResponse) {
+            // Parse the AI response to extract title, question, and answer
+            const lines = aiResponse.split('\n');
+            let title = '';
+            let question = '';
+            let answer = '';
+            let currentSection = '';
+
+            // Debug logging
+            console.log('AI Response:', aiResponse);
+            console.log('Lines:', lines);
+
+            for (let line of lines) {
+                line = line.trim();
+                
+                // Check for section markers (both with and without markdown)
+                if (line.startsWith('標題：') || line.startsWith('**標題：**')) {
+                    currentSection = 'title';
+                    console.log('Found title section marker:', line);
+                    continue;
+                } else if (line.startsWith('問題：') || line.startsWith('**問題：**')) {
+                    currentSection = 'question';
+                    console.log('Found question section marker:', line);
+                    continue;
+                } else if (line.startsWith('答案：') || line.startsWith('**答案：**')) {
+                    currentSection = 'answer';
+                    console.log('Found answer section marker:', line);
+                    continue;
+                }
+
+                // If no section marker found yet, the first non-empty line is the title
+                if (currentSection === '' && line && !line.startsWith('**')) {
+                    currentSection = 'title';
+                    console.log('Auto-detected title section for line:', line);
+                }
+
+                if (currentSection === 'title' && line) {
+                    title += line + '\n';
+                } else if (currentSection === 'question' && line) {
+                    question += line + '\n';
+                } else if (currentSection === 'answer' && line) {
+                    answer += line + '\n';
+                }
+            }
+
+            console.log('Parsed sections:');
+            console.log('Title:', title);
+            console.log('Question:', question);
+            console.log('Answer:', answer);
+
+            // Format title with emojis prominently
+            const formattedTitle = title.trim();
+            const formattedQuestion = question.trim();
+            
+            // Display title and question separately for better formatting
+            const titleDisplay = `<div class="quiz-title">${formattedTitle}</div>`;
+            const questionDisplay = formattedQuestion;
+            
+            // Display the parsed content
+            document.getElementById('quizQuestion').innerHTML = titleDisplay + '<br><br>' + questionDisplay.replace(/\n/g, '<br>');
+            document.getElementById('quizAnswer').innerHTML = answer.trim().replace(/\n/g, '<br>');
+
+            // Show output and coffee button
+            document.getElementById('quizOutput').classList.remove('hidden');
+            document.getElementById('coffeeSection').classList.remove('hidden');
+        }
+
+        function copyContent(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText || element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Show temporary success message
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '已複製！';
+                button.style.backgroundColor = '#4CAF50';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('複製失敗:', err);
+                alert('複製失敗，請手動選擇文字');
+            });
+        }
+    </script>
+</body>
+</html>

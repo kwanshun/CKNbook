@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>有效回覆💪 - CKNbook</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ range(1, 1000) | random }}">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <a href="/" class="nav-link">1</a>
+            <a href="/quiz" class="nav-link">2</a>
+            <a href="/effective-reply" class="nav-link active">3</a>
+        </nav>
+
+        <header>
+            <h1>跟書回覆 📖</h1>
+        </header>
+
+        <!-- Input Form -->
+        <form id="responseForm">
+            <!-- Text Input Section -->
+            <div class="input-section">
+                <label for="userText">請輸入您的文字內容</label>
+                <textarea id="userText" name="userText" placeholder="請輸入您想要回應的內容..." required></textarea>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="input-section">
+                <label for="imageUpload">上傳圖片（可選）</label>
+                <input type="file" id="imageUpload" name="image" accept=".jpg,.jpeg" />
+                <small>支援 JPG/JPEG 格式</small>
+            </div>
+
+            <!-- Tone Selection -->
+            <div class="option-section">
+                <label class="section-label">語調選擇：</label>
+                <div class="option-row">
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="活潑輕鬆" checked required>
+                        <span>輕鬆</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="溫暖" required>
+                        <span>溫暖</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="專業" required>
+                        <span>專業</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="謙虛" required>
+                        <span>謙虛</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="tone" value="幽默" required>
+                        <span>幽默</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn">生成回應</button>
+        </form>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>正在生成回應...</p>
+        </div>
+
+        <!-- Response Output Section -->
+        <div id="responseOutput" class="response-output hidden">
+            <div class="response-section">
+                <div class="output-section">
+                    <div class="output-box">
+                        <div class="output-header">
+                            <span class="output-label">回應建議:</span>
+                            <button class="copy-btn" onclick="copyText('response1')">複製</button>
+                        </div>
+                        <div class="output-content" id="response1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buy Me a Coffee Button -->
+        <div id="coffeeSection" class="coffee-section hidden">
+            <a href="https://www.buymeacoffee.com/awks" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('responseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generateResponse();
+        });
+
+        function generateResponse() {
+            const userText = document.getElementById('userText').value;
+            const tone = document.querySelector('input[name="tone"]:checked').value;
+            const imageFile = document.getElementById('imageUpload').files[0];
+
+            if (!userText.trim()) {
+                alert('請輸入文字內容');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('responseOutput').classList.add('hidden');
+            document.getElementById('coffeeSection').classList.add('hidden');
+
+            // Convert image to base64 if provided
+            let imageBase64 = null;
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imageBase64 = e.target.result.split(',')[1];
+                    sendRequest();
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                sendRequest();
+            }
+
+            function sendRequest() {
+                fetch('/generate-response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: userText,
+                        image: imageBase64,
+                        tone: tone
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loading').classList.add('hidden');
+                    
+                    if (data.error) {
+                        alert('錯誤: ' + data.error);
+                        return;
+                    }
+
+                    // Parse the AI response and display it
+                    displayResponse(data.result);
+                })
+                .catch(error => {
+                    document.getElementById('loading').classList.add('hidden');
+                    console.error('Error:', error);
+                    alert('生成回應時發生錯誤');
+                });
+            }
+        }
+
+        function displayResponse(aiResponse) {
+            // Clean up the AI response and display it directly
+            let cleanResponse = aiResponse.trim();
+            
+            // Remove any option labels if they exist
+            cleanResponse = cleanResponse.replace(/^\*\*回應選項[一二]：\*\*\s*/g, '');
+            cleanResponse = cleanResponse.replace(/^選項[12]：\s*/g, '');
+            cleanResponse = cleanResponse.replace(/^回應[12]：\s*/g, '');
+            
+            // Display the cleaned response
+            document.getElementById('response1').innerHTML = cleanResponse.replace(/\n/g, '<br>');
+
+            // Show output and coffee button
+            document.getElementById('responseOutput').classList.remove('hidden');
+            document.getElementById('coffeeSection').classList.remove('hidden');
+        }
+
+        function copyText(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText || element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Show temporary success message
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '已複製！';
+                button.style.backgroundColor = '#4CAF50';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('複製失敗:', err);
+                alert('複製失敗，請手動選擇文字');
+            });
+        }
+    </script>
+</body>
+</html>

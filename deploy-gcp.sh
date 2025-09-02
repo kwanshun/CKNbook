@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Google Cloud Platform Deployment Script for Tone-Toner
+# Google Cloud Platform Deployment Script for 回覆得好啲
 
-echo "🚀 Deploying Tone-Toner to Google Cloud Platform..."
+echo "🚀 Deploying 回覆得好啲 to Google Cloud Platform..."
 
 # Check if gcloud is installed
 if ! command -v gcloud &> /dev/null; then
@@ -14,7 +14,7 @@ fi
 # Set variables
 PROJECT_ID=""
 REGION="asia-southeast1"  # Changed default to asia-southeast1
-SERVICE_NAME="tone-toner"
+SERVICE_NAME="cknbook2"
 
 # Get project ID if not set
 if [ -z "$PROJECT_ID" ]; then
@@ -73,7 +73,7 @@ gcloud builds submit \
 SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format="value(status.url)")
 
 echo "✅ Deployment complete!"
-echo "🌐 Your Tone-Toner app is available at: $SERVICE_URL"
+echo "🌐 Your 回覆得好啲 app is available at: $SERVICE_URL"
 echo ""
 echo "📋 Next steps:"
 echo "   1. Test your app at the URL above"

@@ -38,6 +38,43 @@ header h1 {
     display: inline-block;
 }
 
+/* Navigation */
+.main-nav {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 30px 0 40px 0;
+    padding: 0 20px;
+}
+
+.nav-link {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #f0f0f0;
+    color: #515154;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.nav-link:hover {
+    background: #e0e0e0;
+    transform: translateY(-2px);
+}
+
+.nav-link.active {
+    background: #007aff;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.nav-link.active:hover {
+    background: #0056cc;
+    box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+}
+
 /* Input Section */
 .input-section {
     margin-bottom: 40px;
@@ -69,6 +106,74 @@ textarea:focus {
     border-color: #007aff;
     background: #fff;
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 30px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #515154;
+    margin-bottom: 12px;
+}
+
+/* File Upload */
+input[type="file"] {
+    width: 100%;
+    padding: 16px;
+    border: 2px dashed #e5e5e7;
+    border-radius: 12px;
+    background: #fafafa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+input[type="file"]:hover {
+    border-color: #007aff;
+    background: #f0f8ff;
+}
+
+input[type="file"]:focus {
+    outline: none;
+    border-color: #007aff;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* Image Preview */
+.image-preview {
+    margin-top: 16px;
+    text-align: center;
+    padding: 16px;
+    border: 2px solid #e5e5e7;
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+.image-preview img {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Nutrition Form */
+.nutrition-form {
+    margin-bottom: 40px;
+}
+
+
+
+/* Error Messages */
+.error {
+    color: #ff3b30;
+    background: #ffe5e5;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 4px solid #ff3b30;
+    margin-top: 16px;
 }
 
 /* Option Sections */
@@ -256,6 +361,169 @@ textarea:focus {
     color: #1d1d1f;
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+/* Content Container Styles */
+.content-container {
+    margin-bottom: 30px;
+}
+
+.content-box {
+    background: #fff;
+    border: 2px solid #e5e5e7;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e5e7;
+}
+
+.content-label {
+    font-weight: 600;
+    color: #1d1d1f;
+    font-size: 1rem;
+}
+
+.content-content {
+    padding: 20px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #1d1d1f;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Quiz Page Styles */
+.regen-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e5e5e7;
+}
+
+.day-selector {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.day-selector label {
+    font-weight: 500;
+    color: #515154;
+    white-space: nowrap;
+}
+
+.day-selector select {
+    padding: 10px 15px;
+    border: 2px solid #e5e5e7;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    min-width: 120px;
+}
+
+.regen-btn {
+    padding: 10px 20px;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.regen-btn:hover {
+    background: #0056cc;
+    transform: translateY(-1px);
+}
+
+.quiz-output {
+    margin-top: 30px;
+}
+
+.quiz-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 20px;
+}
+
+/* Response Page Styles */
+.response-output {
+    margin-top: 30px;
+}
+
+.response-section {
+    margin-bottom: 30px;
+}
+
+.output-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.output-box {
+    background: #fff;
+    border: 2px solid #e5e5e7;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e5e7;
+}
+
+.output-label {
+    font-weight: 600;
+    color: #1d1d1f;
+    font-size: 1rem;
+}
+
+.output-content {
+    padding: 20px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #1d1d1f;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Coffee Button Styles */
+.coffee-section {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+}
+
+.coffee-btn {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.coffee-btn:hover {
+    transform: scale(1.05);
 }
 
 /* Utility Classes */

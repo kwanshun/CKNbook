@@ -58,6 +58,15 @@ def load_system_prompt():
         logger.error("System prompt file not found")
         return "You are a helpful assistant that rewrites text."
 
+def load_response_prompt():
+    """Load the response prompt from file"""
+    try:
+        with open('prompts/response_prompt.txt', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        logger.error("Response prompt file not found")
+        return "You are a helpful assistant that generates effective responses."
+
 def validate_input(paragraph, tone, language):
     """Validate user input"""
     if not paragraph or len(paragraph.strip()) == 0:
@@ -84,7 +93,7 @@ def validate_input(paragraph, tone, language):
 def fine_tune_text(paragraph, tone, language):
     """Fine-tune the paragraph using Gemini API"""
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         system_prompt = load_system_prompt()
         user_prompt = f"""
@@ -112,6 +121,140 @@ def fine_tune_text(paragraph, tone, language):
     except Exception as e:
         logger.error(f"Error in fine_tune_text: {str(e)}")
         return f"錯誤: 服務暫時不可用，請稍後再試"
+
+def generate_effective_response(text, image_base64, tone):
+    """Generate effective responses using Gemini API"""
+    try:
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        response_prompt = load_response_prompt()
+        
+        # Find relevant knowledge content based on user input
+        relevant_knowledge = find_relevant_knowledge(text)
+        
+        user_prompt = f"""
+        用戶輸入：{text}
+        語調要求：{tone}
+        相關書本知識：{relevant_knowledge}
+        """
+        
+        if image_base64:
+            user_prompt += f"\n\n圖片已上傳，請分析圖片內容並納入回應考慮。"
+        
+        full_prompt = response_prompt + "\n\n" + user_prompt
+        
+        print(f"Generating effective response with tone: {tone}...")
+        print(f"Relevant knowledge found: {len(relevant_knowledge)} characters")
+        
+        if image_base64:
+            # Handle image analysis
+            image_data = {"mime_type": "image/jpeg", "data": image_base64}
+            response = model.generate_content([full_prompt, image_data])
+        else:
+            response = model.generate_content(full_prompt)
+        
+        print(f"Response generation: {response.text[:200]}...")
+        
+        if response.text:
+            return response.text
+        else:
+            return "錯誤: API 回應為空"
+        
+    except Exception as e:
+        print(f"Error in generate_effective_response: {str(e)}")
+        return f"錯誤: {str(e)}"
+
+def find_relevant_knowledge(user_input):
+    """Find relevant knowledge content based on user input"""
+    import glob
+    import os
+    import re
+    
+    # Keywords that might indicate specific topics
+    keywords = {
+        '維生素': ['維生素', 'vitamin', '維他命'],
+        '蛋白質': ['蛋白質', 'protein', '氨基酸'],
+        '脂肪': ['脂肪', 'fat', '油', '膽固醇'],
+        '碳水化合物': ['碳水化合物', 'carb', '糖', '澱粉'],
+        '礦物質': ['礦物質', 'mineral', '鈣', '鐵', '鋅'],
+        '早餐': ['早餐', 'breakfast', '早上'],
+        '營養補充': ['營養補充', 'supplement', '補充劑'],
+        '烹調': ['烹調', 'cooking', '煮', '蒸', '炒'],
+        '健康': ['健康', 'health', '養生'],
+        '疾病': ['疾病', 'disease', '病', '症狀']
+    }
+    
+    # Find matching topics
+    relevant_topics = []
+    user_input_lower = user_input.lower()
+    
+    for topic, topic_keywords in keywords.items():
+        for keyword in topic_keywords:
+            if keyword.lower() in user_input_lower:
+                relevant_topics.append(topic)
+                break
+    
+    # If no specific topics found, use general knowledge
+    if not relevant_topics:
+        relevant_topics = ['general']
+    
+    # Load relevant chapter content
+    relevant_content = []
+    
+    # Always include some general knowledge
+    try:
+        with open('book_knowledge.txt', 'r', encoding='utf-8') as f:
+            general_knowledge = f.read()
+            relevant_content.append(f"一般營養知識：\n{general_knowledge}")
+    except:
+        pass
+    
+    # Load specific chapter content based on topics
+    knowledge_files = glob.glob('knowledge/*.md')
+    
+    for file_path in knowledge_files:
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+                # Check if this chapter is relevant to the user's input
+                is_relevant = False
+                for topic in relevant_topics:
+                    if topic in content or any(keyword in content for keyword in keywords.get(topic, [])):
+                        is_relevant = True
+                        break
+                
+                if is_relevant:
+                    # Extract chapter title and key content
+                    lines = content.split('\n')
+                    title = lines[0] if lines else "未知章節"
+                    # Get first few paragraphs for context
+                    key_content = '\n'.join(lines[1:min(10, len(lines))])
+                    relevant_content.append(f"{title}\n{key_content}")
+                    
+        except Exception as e:
+            print(f"Error reading knowledge file {file_path}: {e}")
+            continue
+    
+    # If no specific content found, try to find chapters that might be relevant
+    if len(relevant_content) <= 1:  # Only general knowledge
+        # Load a few random chapters to provide context
+        import random
+        knowledge_files = glob.glob('knowledge/*.md')
+        if knowledge_files:
+            selected_files = random.sample(knowledge_files, min(3, len(knowledge_files)))
+            for file_path in selected_files:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        lines = content.split('\n')
+                        title = lines[0] if lines else "未知章節"
+                        key_content = '\n'.join(lines[1:min(8, len(lines))])
+                        relevant_content.append(f"{title}\n{key_content}")
+                except:
+                    continue
+    
+    return "\n\n---\n\n".join(relevant_content)
 
 @app.route('/')
 def index():
