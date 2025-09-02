@@ -200,9 +200,17 @@
             const titleDisplay = `<div class="quiz-title">${formattedTitle}</div>`;
             const questionDisplay = formattedQuestion;
             
-            // Display the parsed content
-            document.getElementById('quizQuestion').innerHTML = titleDisplay + '<br><br>' + questionDisplay.replace(/\n/g, '<br>');
-            document.getElementById('quizAnswer').innerHTML = answer.trim().replace(/\n/g, '<br>');
+            // Convert markdown to HTML for better formatting
+            const convertMarkdown = (text) => {
+                return text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // **bold** -> <strong>bold</strong>
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')              // *italic* -> <em>italic</em>
+                    .replace(/\n/g, '<br>');                           // newlines -> <br>
+            };
+            
+            // Display the parsed content with markdown conversion
+            document.getElementById('quizQuestion').innerHTML = titleDisplay + '<br><br>' + convertMarkdown(questionDisplay);
+            document.getElementById('quizAnswer').innerHTML = convertMarkdown(answer.trim());
 
             // Show output and coffee button
             document.getElementById('quizOutput').classList.remove('hidden');
