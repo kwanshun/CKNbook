@@ -29,12 +29,13 @@ RUN adduser --disabled-password --gecos '' appuser && \
     chown -R appuser:appuser /app
 USER appuser
 
-# Expose port
-EXPOSE 5000
+# Use PORT environment variable from Cloud Run
+ENV PORT=8080
+EXPOSE $PORT
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/ || exit 1
+    CMD curl -f http://localhost:$PORT/ || exit 1
 
 # Run the application
 CMD ["python", "main.py"]
