@@ -143,75 +143,105 @@
         }
 
         function displayQuiz(aiResponse) {
-            // Parse the AI response to extract title, question, and answer
-            const lines = aiResponse.split('\n');
-            let title = '';
-            let question = '';
-            let answer = '';
-            let currentSection = '';
-
-            // Debug logging
-            console.log('AI Response:', aiResponse);
-            console.log('Lines:', lines);
-
-            for (let line of lines) {
-                line = line.trim();
+            try {
+                console.log('AI Response:', aiResponse);
+                console.log('AI Response type:', typeof aiResponse);
                 
-                // Check for section markers (both with and without markdown)
-                if (line.startsWith('標題：') || line.startsWith('**標題：**')) {
-                    currentSection = 'title';
-                    console.log('Found title section marker:', line);
-                    continue;
-                } else if (line.startsWith('問題：') || line.startsWith('**問題：**')) {
-                    currentSection = 'question';
-                    console.log('Found question section marker:', line);
-                    continue;
-                } else if (line.startsWith('答案：') || line.startsWith('**答案：**')) {
-                    currentSection = 'answer';
-                    console.log('Found answer section marker:', line);
-                    continue;
+                // Check if aiResponse is already a JSON object
+                let quizData;
+                if (typeof aiResponse === 'object' && aiResponse !== null) {
+                    // Backend already returned parsed JSON
+                    quizData = aiResponse;
+                    console.log('Using pre-parsed JSON data:', quizData);
+                } else {
+                    // Try to parse as JSON string
+                    try {
+                        quizData = JSON.parse(aiResponse);
+                        console.log('Parsed JSON data:', quizData);
+                    } catch (e) {
+                        console.log('Failed to parse JSON, treating as plain text');
+                        // Fallback to plain text parsing
+                        fallbackFormatting(aiResponse);
+                        return;
+                    }
                 }
-
-                // If no section marker found yet, the first non-empty line is the title
-                if (currentSection === '' && line && !line.startsWith('**')) {
-                    currentSection = 'title';
-                    console.log('Auto-detected title section for line:', line);
-                }
-
-                if (currentSection === 'title' && line) {
-                    title += line + '\n';
-                } else if (currentSection === 'question' && line) {
-                    question += line + '\n';
-                } else if (currentSection === 'answer' && line) {
-                    answer += line + '\n';
-                }
+                
+                // Format the quiz output exactly as requested
+                const formattedQuiz = formatQuizOutput(quizData);
+                const formattedAnswer = formatAnswerOutput(quizData);
+                
+                // Display the formatted content
+                document.getElementById('quizQuestion').innerHTML = formattedQuiz;
+                document.getElementById('quizAnswer').innerHTML = formattedAnswer;
+                
+                // Show output and coffee button
+                document.getElementById('quizOutput').classList.remove('hidden');
+                document.getElementById('coffeeSection').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error in displayQuiz:', error);
+                fallbackFormatting(aiResponse);
             }
+        }
 
-            console.log('Parsed sections:');
-            console.log('Title:', title);
-            console.log('Question:', question);
-            console.log('Answer:', answer);
+        function formatQuizOutput(quizData) {
+            // Format exactly as requested: <bold>{標題}</bold>\n\n{問題}\n\n{選項}
+            let formattedOutput = '';
+            
+            // Title in bold
+            formattedOutput += `<div class="quiz-title"><strong>${quizData.標題}</strong></div>`;
+            
+            // Question
+            formattedOutput += `<div class="quiz-question">${quizData.問題}</div>`;
+            
+            // Options with proper formatting
+            formattedOutput += '<div class="quiz-options">';
+            formattedOutput += `<div class="quiz-option">A. ${quizData.選項.A}</div>`;
+            formattedOutput += '<br>';
+            formattedOutput += `<div class="quiz-option">B. ${quizData.選項.B}</div>`;
+            formattedOutput += '<br>';
+            formattedOutput += `<div class="quiz-option">C. ${quizData.選項.C}</div>`;
+            formattedOutput += '<br>';
+            formattedOutput += `<div class="quiz-option">D. ${quizData.選項.D}</div>`;
+            formattedOutput += '</div>';
+            
+            return formattedOutput;
+        }
 
-            // Format title with emojis prominently
-            const formattedTitle = title.trim();
-            const formattedQuestion = question.trim();
+        function formatAnswerOutput(quizData) {
+            // Format exactly as requested: 正確陳述是{A} 和 {C}\n\n{explanation}
+            let formattedAnswer = '';
             
-            // Display title and question separately for better formatting
-            const titleDisplay = `<div class="quiz-title">${formattedTitle}</div>`;
-            const questionDisplay = formattedQuestion;
+            // Determine the answer format based on the question type
+            const questionText = quizData.問題;
+            let answerPrefix = '';
             
-            // Convert markdown to HTML for better formatting
-            const convertMarkdown = (text) => {
-                return text
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // **bold** -> <strong>bold</strong>
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')              // *italic* -> <em>italic</em>
-                    .replace(/\n/g, '<br>');                           // newlines -> <br>
-            };
+            if (questionText.includes('哪一項陳述是錯誤的')) {
+                answerPrefix = `錯誤陳述是 ${quizData.答案}`;
+            } else if (questionText.includes('哪兩項陳述是正確的')) {
+                answerPrefix = `正確陳述是 ${quizData.答案}`;
+            } else {
+                answerPrefix = `正確陳述是 ${quizData.答案}`;
+            }
             
-            // Display the parsed content with markdown conversion
-            document.getElementById('quizQuestion').innerHTML = titleDisplay + '<br><br>' + convertMarkdown(questionDisplay);
-            document.getElementById('quizAnswer').innerHTML = convertMarkdown(answer.trim());
+            formattedAnswer += `<div class="answer-prefix">${answerPrefix}</div>`;
+            formattedAnswer += `<div class="answer-explanation">${quizData.explanation}</div>`;
+            
+            return formattedAnswer;
+        }
 
+        function fallbackFormatting(aiResponse) {
+            // Fallback formatting if JSON parsing fails
+            console.log('Using fallback formatting for plain text');
+            
+            // Simple fallback: just convert newlines to <br> tags
+            const formattedResponse = aiResponse
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+            
+            document.getElementById('quizQuestion').innerHTML = formattedResponse;
+            document.getElementById('quizAnswer').innerHTML = '答案將在問題中顯示';
+            
             // Show output and coffee button
             document.getElementById('quizOutput').classList.remove('hidden');
             document.getElementById('coffeeSection').classList.remove('hidden');

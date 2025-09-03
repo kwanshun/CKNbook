@@ -3,6 +3,7 @@ import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
+import json
 
 # Load environment variables
 load_dotenv()
@@ -130,7 +131,31 @@ def generate_quiz(day_number):
         print(f"Quiz response: {response.text[:200]}...")
         
         if response.text:
-            return response.text
+            # Try to parse as JSON
+            try:
+                # Clean up the response text - remove markdown code blocks if present
+                clean_text = response.text.strip()
+                
+                # Remove markdown code blocks more thoroughly
+                if '```json' in clean_text:
+                    # Extract content between ```json and ```
+                    start = clean_text.find('```json') + 7
+                    end = clean_text.rfind('```')
+                    if end > start:
+                        clean_text = clean_text[start:end].strip()
+                elif clean_text.startswith('```') and clean_text.endswith('```'):
+                    # Remove ``` at start and end
+                    clean_text = clean_text[3:-3].strip()
+                
+                print(f"Cleaned text for JSON parsing: {clean_text[:100]}...")
+                
+                quiz_data = json.loads(clean_text)
+                print("Successfully parsed JSON response")
+                return quiz_data  # Return the actual JSON object, not a string
+            except json.JSONDecodeError as e:
+                print(f"JSON parsing failed: {e}")
+                print("Falling back to plain text response")
+                return response.text
         else:
             return "錯誤: API 回應為空"
         
