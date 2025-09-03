@@ -38,6 +38,8 @@ header h1 {
     display: inline-block;
 }
 
+
+
 /* Navigation */
 .main-nav {
     display: flex;
@@ -587,6 +589,20 @@ input[type="file"]:focus {
     text-align: center;
     margin-top: 40px;
     padding: 20px;
+}
+
+/* Version Footer */
+.version-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px 0;
+    border-top: 1px solid #e5e5e7;
+}
+
+.version-text {
+    font-size: 0.8rem;
+    color: #86868b;
+    font-weight: 400;
 }
 
 .coffee-btn {

@@ -51,6 +51,25 @@ def load_response_prompt():
         print("Warning: response_prompt.txt not found")
         return ""
 
+def load_version():
+    """Load the version from file"""
+    import os
+    current_dir = os.getcwd()
+    version_file = os.path.join(current_dir, 'version.txt')
+    print(f"Looking for version file at: {version_file}")
+    
+    try:
+        with open(version_file, 'r', encoding='utf-8') as f:
+            version = f.read().strip()
+            print(f"✓ Loaded version from file: '{version}'")
+            return version
+    except FileNotFoundError:
+        print(f"Warning: version.txt not found at {version_file}")
+        return "v0.1"
+    except Exception as e:
+        print(f"Error reading version.txt: {e}")
+        return "v0.1"
+
 def get_chapter_content(day_number):
     """Get content from the knowledge directory for a specific day"""
     import glob
@@ -383,7 +402,9 @@ def find_relevant_knowledge(user_input):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    version = load_version()
+    print(f"Rendering index.html with version: '{version}'")
+    return render_template('index.html', version=version)
 
 @app.route('/process', methods=['POST'])
 def process_text():
@@ -405,11 +426,13 @@ def process_text():
 
 @app.route('/quiz')
 def quiz():
-    return render_template('quiz.html')
+    version = load_version()
+    return render_template('quiz.html', version=version)
 
 @app.route('/effective-reply')
 def effective_reply():
-    return render_template('effective_reply.html')
+    version = load_version()
+    return render_template('effective_reply.html', version=version)
 
 @app.route('/generate-quiz', methods=['POST'])
 def generate_quiz_route():
