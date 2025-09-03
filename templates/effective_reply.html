@@ -53,10 +53,7 @@
                         <input type="radio" name="tone" value="專業" required>
                         <span>專業</span>
                     </label>
-                    <label class="option-item">
-                        <input type="radio" name="tone" value="謙虛" required>
-                        <span>謙虛</span>
-                    </label>
+
                     <label class="option-item">
                         <input type="radio" name="tone" value="幽默" required>
                         <span>幽默</span>
@@ -77,13 +74,23 @@
         <!-- Response Output Section -->
         <div id="responseOutput" class="response-output hidden">
             <div class="response-section">
-                <div class="output-section">
-                    <div class="output-box">
-                        <div class="output-header">
-                            <span class="output-label">回應建議:</span>
-                            <button class="copy-btn" onclick="copyText('response1')">複製</button>
+                <div class="option-section">
+                    <h3>選擇您的回應選項：</h3>
+                    
+                    <div class="option-box">
+                        <div class="option-header">
+                            <span class="option-label">選項 1:</span>
+                            <button class="copy-btn" onclick="copyText('option1')">複製</button>
                         </div>
-                        <div class="output-content" id="response1"></div>
+                        <div class="option-content" id="option1"></div>
+                    </div>
+                    
+                    <div class="option-box">
+                        <div class="option-header">
+                            <span class="option-label">選項 2:</span>
+                            <button class="copy-btn" onclick="copyText('option2')">複製</button>
+                        </div>
+                        <div class="option-content" id="option2"></div>
                     </div>
                 </div>
             </div>
@@ -162,16 +169,26 @@
         }
 
         function displayResponse(aiResponse) {
-            // Clean up the AI response and display it directly
-            let cleanResponse = aiResponse.trim();
-            
-            // Remove any option labels if they exist
-            cleanResponse = cleanResponse.replace(/^\*\*回應選項[一二]：\*\*\s*/g, '');
-            cleanResponse = cleanResponse.replace(/^選項[12]：\s*/g, '');
-            cleanResponse = cleanResponse.replace(/^回應[12]：\s*/g, '');
-            
-            // Display the cleaned response
-            document.getElementById('response1').innerHTML = cleanResponse.replace(/\n/g, '<br>');
+            // Check if the response is a JSON object
+            if (typeof aiResponse === 'object' && aiResponse !== null) {
+                // Handle JSON response
+                const feeling = aiResponse.feeling || '';
+                const knowledge = aiResponse.knowledge || '';
+                
+                // Display option 1 (feeling)
+                document.getElementById('option1').innerHTML = feeling.replace(/\n/g, '<br>');
+                // Display option 2 (knowledge)
+                document.getElementById('option2').innerHTML = knowledge.replace(/\n/g, '<br>');
+            } else {
+                // Fallback: if response is not JSON, treat as plain text
+                let cleanResponse = aiResponse.toString().trim();
+                cleanResponse = cleanResponse.replace(/^\*\*回應選項[一二]：\*\*\s*/g, '');
+                cleanResponse = cleanResponse.replace(/^選項[12]：\s*/g, '');
+                cleanResponse = cleanResponse.replace(/^回應[12]：\s*/g, '');
+                
+                document.getElementById('option1').innerHTML = cleanResponse.replace(/\n/g, '<br>');
+                document.getElementById('option2').innerHTML = '選項 2 無法解析，請重試。';
+            }
 
             // Show output and coffee button
             document.getElementById('responseOutput').classList.remove('hidden');

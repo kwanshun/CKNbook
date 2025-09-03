@@ -58,10 +58,10 @@ def get_chapter_content(day_number):
     
     # Try to find the chapter file with different naming patterns
     patterns = [
-        f"knowledge/第{day_number}課：*.md",
-        f"knowledge/第 {day_number} 課：*.md",
-        f"knowledge/第{day_number}課*.md",
-        f"knowledge/第 {day_number} 課*.md"
+        f"knowledge/第{day_number}天：*.md",
+        f"knowledge/第 {day_number} 天：*.md",
+        f"knowledge/第{day_number}天*.md",
+        f"knowledge/第 {day_number} 天*.md"
     ]
     
     for pattern in patterns:
@@ -177,6 +177,12 @@ def generate_effective_response(text, image_base64, tone):
         用戶輸入：{text}
         語調要求：{tone}
         相關書本知識：{relevant_knowledge}
+        
+        請生成回應，使用以下JSON格式：
+        {{
+            "feeling": "對用戶分享內容的直接反應和感受，使用表情符號增加親切感，字數在30字內",
+            "knowledge": "結合《吃的營養科學觀》的相關知識，分析營養價值，提出建議，鼓勵成員分享，字數在120字內"
+        }}
         """
         
         if image_base64:
@@ -197,7 +203,31 @@ def generate_effective_response(text, image_base64, tone):
         print(f"Response generation: {response.text[:200]}...")
         
         if response.text:
-            return response.text
+            # Try to parse as JSON
+            try:
+                # Clean up the response text - remove markdown code blocks if present
+                clean_text = response.text.strip()
+                
+                # Remove markdown code blocks more thoroughly
+                if '```json' in clean_text:
+                    # Extract content between ```json and ```
+                    start = clean_text.find('```json') + 7
+                    end = clean_text.rfind('```')
+                    if end > start:
+                        clean_text = clean_text[start:end].strip()
+                elif clean_text.startswith('```') and clean_text.endswith('```'):
+                    # Remove ``` at start and end
+                    clean_text = clean_text[3:-3].strip()
+                
+                print(f"Cleaned text for JSON parsing: {clean_text[:100]}...")
+                
+                response_data = json.loads(clean_text)
+                print("Successfully parsed JSON response")
+                return response_data  # Return the actual JSON object, not a string
+            except json.JSONDecodeError as e:
+                print(f"JSON parsing failed: {e}")
+                print("Falling back to plain text response")
+                return response.text
         else:
             return "錯誤: API 回應為空"
         
@@ -226,7 +256,7 @@ def find_relevant_knowledge(user_input):
         '年輕': ['年輕', '衰老', '老化', '抗衰老', '保持年輕'],
         '氨基酸': ['氨基酸', '必需氨基酸', '非必需氨基酸', '氨基酸種類', '氨基酸數量'],
         '數字': ['數字', '數量', '幾種', '多少種', '幾種', '數量'],
-        '課': ['課', '章', '章節', '第幾課', '第幾章']
+        '天': ['天', '日', '第幾天', '第幾日']
     }
     
     # Find matching topics
@@ -240,9 +270,9 @@ def find_relevant_knowledge(user_input):
                 relevant_topics.append(topic)
                 break
     
-    # Second pass: look for specific patterns like "第X課" or "必需氨基酸"
-    if '第' in user_input and '課' in user_input:
-        relevant_topics.append('課')
+    # Second pass: look for specific patterns like "第X天" or "必需氨基酸"
+    if '第' in user_input and '天' in user_input:
+        relevant_topics.append('天')
     
     if '必需氨基酸' in user_input or '氨基酸' in user_input:
         relevant_topics.append('氨基酸')
@@ -290,8 +320,8 @@ def find_relevant_knowledge(user_input):
                         score += 20  # Bonus for amino acid specific content
                     if topic == '數字' and any(word in content for word in ['22種', '8種', '14種']):
                         score += 15  # Bonus for specific numbers
-                    if topic == '課' and any(word in content for word in ['第3課', '第三章', '第三課']):
-                        score += 15  # Bonus for specific chapters
+                    if topic == '天' and any(word in content for word in ['第3天', '第三天', '第三日']):
+                        score += 15  # Bonus for specific days
                 
                 # Check for exact keyword matches
                 for topic, topic_keywords in keywords.items():

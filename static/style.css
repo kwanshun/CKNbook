@@ -315,6 +315,58 @@ input[type="file"]:focus {
     margin-top: 40px;
 }
 
+.option-section {
+    margin-top: 40px;
+}
+
+.option-section h3 {
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e5e5e7;
+}
+
+.option-box {
+    background: #f8f9fa;
+    border: 1px solid #e5e5e7;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.option-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e7;
+}
+
+.option-label {
+    font-weight: 600;
+    color: #1d1d1f;
+    font-size: 1rem;
+}
+
+.option-content {
+    padding: 20px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #1d1d1f;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 .output-box {
     background: #f8f9fa;
     border: 1px solid #e5e5e7;
