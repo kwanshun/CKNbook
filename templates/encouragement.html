@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鼓勵回覆🌟 - CKNbook</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ range(1, 1000) | random }}">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <a href="/" class="nav-link">1</a>
+            <a href="/quiz" class="nav-link">2</a>
+            <a href="/effective-reply" class="nav-link">3</a>
+            <a href="/encouragement" class="nav-link active">4</a>
+        </nav>
+
+        <header>
+            <h1>鼓勵回覆 🌟</h1>
+        </header>
+
+        <!-- Input Form -->
+        <form id="encouragementForm">
+            <!-- Text Input Section -->
+            <div class="input-section">
+                <label for="userInput">學員分享了什麼內容？我來分析並給予合適的鼓勵</label>
+                <textarea id="userInput" name="userInput" placeholder="請輸入學員分享的內容..." required></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn">分析並生成鼓勵</button>
+        </form>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>正在分析內容並生成鼓勵...</p>
+        </div>
+
+        <!-- Analysis Result Section -->
+        <div id="analysisResult" class="analysis-result hidden">
+            <div class="analysis-section">
+                <h3>內容分析：</h3>
+                <div class="analysis-content" id="contentAnalysis"></div>
+            </div>
+            
+            <div class="encouragement-section">
+                <h3>推薦鼓勵類型：</h3>
+                <div class="encouragement-type" id="encouragementType"></div>
+                
+                <h3>廣東話鼓勵回覆選項：</h3>
+                
+                <div class="encouragement-options">
+                    <div class="encouragement-option-box">
+                        <div class="option-header">
+                            <span class="option-label">選項 1 (溫馨鼓勵)：</span>
+                            <button class="copy-btn" onclick="copyEncouragement('encouragement1')">複製</button>
+                        </div>
+                        <div class="encouragement-content" id="encouragement1"></div>
+                    </div>
+
+                    <div class="encouragement-option-box">
+                        <div class="option-header">
+                            <span class="option-label">選項 2 (活潑讚美)：</span>
+                            <button class="copy-btn" onclick="copyEncouragement('encouragement2')">複製</button>
+                        </div>
+                        <div class="encouragement-content" id="encouragement2"></div>
+                    </div>
+
+                    <div class="encouragement-option-box">
+                        <div class="option-header">
+                            <span class="option-label">選項 3 (實用建議)：</span>
+                            <button class="copy-btn" onclick="copyEncouragement('encouragement3')">複製</button>
+                        </div>
+                        <div class="encouragement-content" id="encouragement3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buy Me a Coffee Button -->
+        <div id="coffeeSection" class="coffee-section hidden">
+            <a href="https://www.buymeacoffee.com/awks" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+        </div>
+
+        <!-- Version Footer -->
+        <div class="version-footer">
+            <span class="version-text">{{ version }}</span>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('encouragementForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generateEncouragement();
+        });
+
+        function generateEncouragement() {
+            const userInput = document.getElementById('userInput').value;
+
+            if (!userInput.trim()) {
+                alert('請輸入學員分享的內容');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('analysisResult').classList.add('hidden');
+            document.getElementById('coffeeSection').classList.add('hidden');
+
+            // Send request
+            fetch('/generate-encouragement', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    input: userInput
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').classList.add('hidden');
+                
+                if (data.error) {
+                    alert('錯誤: ' + data.error);
+                    return;
+                }
+
+                // Display the analysis and encouragement
+                displayEncouragement(data.result);
+            })
+            .catch(error => {
+                document.getElementById('loading').classList.add('hidden');
+                console.error('Error:', error);
+                alert('生成鼓勵時發生錯誤');
+            });
+        }
+
+        function displayEncouragement(result) {
+            // Parse the AI response
+            if (typeof result === 'object' && result !== null) {
+                // Handle JSON response
+                const analysis = result.analysis || '';
+                const type = result.type || '';
+                const encouragement1 = result.encouragement1 || '';
+                const encouragement2 = result.encouragement2 || '';
+                const encouragement3 = result.encouragement3 || '';
+                
+                document.getElementById('contentAnalysis').innerHTML = analysis.replace(/\n/g, '<br>');
+                document.getElementById('encouragementType').innerHTML = type.replace(/\n/g, '<br>');
+                document.getElementById('encouragement1').innerHTML = encouragement1.replace(/\n/g, '<br>');
+                document.getElementById('encouragement2').innerHTML = encouragement2.replace(/\n/g, '<br>');
+                document.getElementById('encouragement3').innerHTML = encouragement3.replace(/\n/g, '<br>');
+            } else {
+                // Fallback: if response is not JSON, treat as plain text
+                let cleanResponse = result.toString().trim();
+                document.getElementById('contentAnalysis').innerHTML = cleanResponse.replace(/\n/g, '<br>');
+                document.getElementById('encouragementType').innerHTML = '無法解析鼓勵類型';
+                document.getElementById('encouragement1').innerHTML = '無法解析鼓勵內容';
+                document.getElementById('encouragement2').innerHTML = '無法解析鼓勵內容';
+                document.getElementById('encouragement3').innerHTML = '無法解析鼓勵內容';
+            }
+
+            // Show output and coffee button
+            document.getElementById('analysisResult').classList.remove('hidden');
+            document.getElementById('coffeeSection').classList.remove('hidden');
+        }
+
+        function copyEncouragement(optionId) {
+            const encouragementElement = document.getElementById(optionId);
+            const text = encouragementElement.innerText || encouragementElement.textContent;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopyFeedback(optionId);
+                }).catch(err => {
+                    console.error('複製失敗:', err);
+                    fallbackCopyText(text);
+                });
+            } else {
+                fallbackCopyText(text);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showCopyFeedback();
+            } catch (err) {
+                console.error('複製失敗:', err);
+                alert('複製失敗，請手動選取文字');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        function showCopyFeedback(optionId) {
+            // Find the specific copy button for this option
+            const optionElement = document.getElementById(optionId);
+            const copyBtn = optionElement.parentElement.querySelector('.copy-btn');
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '已複製!';
+            copyBtn.style.background = '#34c759';
+            copyBtn.style.borderColor = '#34c759';
+            copyBtn.style.color = 'white';
+            
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.style.background = 'transparent';
+                copyBtn.style.borderColor = '#007aff';
+                copyBtn.style.color = '#007aff';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

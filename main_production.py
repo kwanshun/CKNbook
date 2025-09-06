@@ -3,8 +3,13 @@ import logging
 import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+try:
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+    LIMITER_AVAILABLE = True
+except ImportError:
+    LIMITER_AVAILABLE = False
+    print("Warning: flask_limiter not available, rate limiting disabled")
 from dotenv import load_dotenv
 import re
 from datetime import datetime
@@ -33,12 +38,15 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-this'
 # CORS configuration - restrict in production
 CORS(app, origins=os.getenv('ALLOWED_ORIGINS', '*').split(','))
 
-# Rate limiting
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["100 per hour", "10 per minute"]
-)
-limiter.init_app(app)
+# Rate limiting (if available)
+if LIMITER_AVAILABLE:
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=["100 per hour", "10 per minute"]
+    )
+    limiter.init_app(app)
+else:
+    limiter = None
 
 # Configure Gemini API
 api_key = os.getenv('API_KEY')
@@ -256,12 +264,109 @@ def find_relevant_knowledge(user_input):
     
     return "\n\n---\n\n".join(relevant_content)
 
+def generate_encouragement(user_input):
+    """Generate encouragement based on user input analysis"""
+    try:
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        encouragement_prompt = """
+你是一個專業的學習群組管理員，專門分析學員分享的內容並提供合適的鼓勵回覆。
+
+請分析用戶分享的內容，並根據以下5種鼓勵類型選擇最合適的一種：
+
+1. 👍【精華筆記】- 適合詳盡整理、條列清晰、重點到位的分享
+2. 🌟【深度學習】- 適合用心提煉書中精華+個人實踐心得的分享  
+3. 📚【優質分享】- 適合結構化筆記+金句標註的認真分享
+4. 💡【知識燈塔】- 適合從理論到案例解析都超扎實的深度分享
+5. 🎯【學習楷模】- 適合附有「行動清單」等實用內容的分享
+
+重要：encouragement 欄位必須使用廣東話（粵語）表達，不能使用普通話。
+
+請以JSON格式回覆：
+{
+    "analysis": "對分享內容的簡短分析（50字內）",
+    "type": "推薦的鼓勵類型（包含emoji和標題）",
+    "encouragement1": "第一個鼓勵回覆選項，必須使用廣東話（粵語）表達，限制在30字以內",
+    "encouragement2": "第二個鼓勵回覆選項，必須使用廣東話（粵語）表達，限制在30字以內",
+    "encouragement3": "第三個鼓勵回覆選項，必須使用廣東話（粵語）表達，限制在30字以內"
+}
+"""
+        
+        user_prompt = f"""
+學員分享內容：
+{user_input}
+
+請分析這個分享內容，選擇最合適的鼓勵類型，並生成3個不同的鼓勵回覆選項。
+注意：所有encouragement選項都必須使用廣東話（粵語）來表達，每個選項都要有不同的風格：
+- 選項1：溫馨鼓勵風格
+- 選項2：活潑讚美風格  
+- 選項3：實用建議風格
+
+例如：
+- 好叻啊！學以致用，真係好有用！
+- 真係好用心，繼續加油！
+- 好詳細嘅分享，多謝你！
+
+不要使用普通話。
+"""
+        
+        full_prompt = encouragement_prompt + "\n\n" + user_prompt
+        
+        logger.info(f"Generating encouragement for input length: {len(user_input)}")
+        response = model.generate_content(full_prompt)
+        
+        if response.text:
+            # Try to parse as JSON
+            try:
+                # Clean up the response text - remove markdown code blocks if present
+                clean_text = response.text.strip()
+                
+                # Remove markdown code blocks more thoroughly
+                if '```json' in clean_text:
+                    # Extract content between ```json and ```
+                    start = clean_text.find('```json') + 7
+                    end = clean_text.rfind('```')
+                    if end > start:
+                        clean_text = clean_text[start:end].strip()
+                elif clean_text.startswith('```') and clean_text.endswith('```'):
+                    # Remove ``` at start and end
+                    clean_text = clean_text[3:-3].strip()
+                
+                logger.info(f"Cleaned text for JSON parsing: {clean_text[:100]}...")
+                
+                import json
+                response_data = json.loads(clean_text)
+                logger.info("Successfully parsed JSON response")
+                return response_data  # Return the actual JSON object, not a string
+            except json.JSONDecodeError as e:
+                logger.warning(f"JSON parsing failed: {e}")
+                logger.info("Falling back to plain text response")
+                return response.text
+        else:
+            logger.warning("Empty response from API")
+            return "錯誤: API 回應為空"
+        
+    except Exception as e:
+        logger.error(f"Error in generate_encouragement: {str(e)}")
+        return f"錯誤: {str(e)}"
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
+@app.route('/encouragement')
+def encouragement():
+    return render_template('encouragement.html')
+
+@app.route('/quiz')
+def quiz():
+    return render_template('quiz.html')
+
+@app.route('/effective-reply')
+def effective_reply():
+    return render_template('effective_reply.html')
+
 @app.route('/process', methods=['POST'])
-@limiter.limit("5 per minute")
 def process_text():
     try:
         if not request.is_json:
@@ -296,6 +401,32 @@ def rate_limit_handler(e):
 @app.errorhandler(404)
 def not_found_handler(e):
     return jsonify({'error': '頁面不存在'}), 404
+
+@app.route('/generate-encouragement', methods=['POST'])
+def generate_encouragement_route():
+    try:
+        if not request.is_json:
+            return jsonify({'error': '請求格式錯誤'}), 400
+            
+        data = request.json
+        user_input = data.get('input', '').strip()
+        
+        if not user_input:
+            return jsonify({'error': '請輸入學員分享的內容'}), 400
+        
+        if len(user_input) > 2000:
+            return jsonify({'error': '輸入內容過長，請限制在2000字元以內'}), 400
+        
+        # Log request
+        logger.info(f"Processing encouragement request - Length: {len(user_input)}")
+        
+        result = generate_encouragement(user_input)
+        
+        return jsonify({'result': result})
+        
+    except Exception as e:
+        logger.error(f"Error in generate_encouragement_route: {str(e)}")
+        return jsonify({'error': '處理時發生錯誤，請稍後再試'}), 500
 
 @app.errorhandler(500)
 def internal_error_handler(e):
