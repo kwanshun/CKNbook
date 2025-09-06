@@ -75,6 +75,15 @@ def load_response_prompt():
         logger.error("Response prompt file not found")
         return "You are a helpful assistant that generates effective responses."
 
+def load_quiz_prompt():
+    """Load the quiz prompt from file"""
+    try:
+        with open('prompts/quiz_prompt.txt', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        logger.error("Quiz prompt file not found")
+        return "You are a helpful assistant that generates quiz questions."
+
 def validate_input(paragraph, tone, language):
     """Validate user input"""
     if not paragraph or len(paragraph.strip()) == 0:
@@ -264,6 +273,88 @@ def find_relevant_knowledge(user_input):
     
     return "\n\n---\n\n".join(relevant_content)
 
+def get_chapter_content(day_number):
+    """Get content from the knowledge directory for a specific day"""
+    import glob
+    import os
+    
+    # Try to find the chapter file with different naming patterns
+    patterns = [
+        f"knowledge/第{day_number}天：*.md",
+        f"knowledge/第 {day_number} 天：*.md",
+        f"knowledge/第{day_number}天*.md",
+        f"knowledge/第 {day_number} 天*.md"
+    ]
+    
+    for pattern in patterns:
+        files = glob.glob(pattern)
+        if files:
+            try:
+                with open(files[0], 'r', encoding='utf-8') as f:
+                    return f.read()
+            except Exception as e:
+                logger.error(f"Error reading file {files[0]}: {e}")
+                continue
+    
+    return f"第{day_number}課的內容未找到"
+
+def generate_quiz(day_number):
+    """Generate quiz questions and answers using Gemini API"""
+    try:
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        quiz_prompt = load_quiz_prompt()
+        chapter_content = get_chapter_content(day_number)
+        
+        user_prompt = f"""
+        請根據以下章節內容生成測驗題：
+        
+        章節內容：
+        {chapter_content}
+        
+        請確保使用正確的章節編號：第{day_number}天
+        """
+        
+        full_prompt = quiz_prompt + "\n\n" + user_prompt
+        
+        logger.info(f"Generating quiz for day {day_number}...")
+        response = model.generate_content(full_prompt)
+        
+        if response.text:
+            # Try to parse as JSON
+            try:
+                # Clean up the response text - remove markdown code blocks if present
+                clean_text = response.text.strip()
+                
+                # Remove markdown code blocks more thoroughly
+                if '```json' in clean_text:
+                    # Extract content between ```json and ```
+                    start = clean_text.find('```json') + 7
+                    end = clean_text.rfind('```')
+                    if end > start:
+                        clean_text = clean_text[start:end].strip()
+                elif clean_text.startswith('```') and clean_text.endswith('```'):
+                    # Remove ``` at start and end
+                    clean_text = clean_text[3:-3].strip()
+                
+                logger.info(f"Cleaned text for JSON parsing: {clean_text[:100]}...")
+                
+                import json
+                quiz_data = json.loads(clean_text)
+                logger.info("Successfully parsed JSON response")
+                return quiz_data  # Return the actual JSON object, not a string
+            except json.JSONDecodeError as e:
+                logger.warning(f"JSON parsing failed: {e}")
+                logger.info("Falling back to plain text response")
+                return response.text
+        else:
+            logger.warning("Empty response from API")
+            return "錯誤: API 回應為空"
+        
+    except Exception as e:
+        logger.error(f"Error in generate_quiz: {str(e)}")
+        return f"錯誤: {str(e)}"
+
 def generate_encouragement(user_input):
     """Generate encouragement based on user input analysis"""
     try:
@@ -426,6 +517,57 @@ def generate_encouragement_route():
         
     except Exception as e:
         logger.error(f"Error in generate_encouragement_route: {str(e)}")
+        return jsonify({'error': '處理時發生錯誤，請稍後再試'}), 500
+
+@app.route('/generate-quiz', methods=['POST'])
+def generate_quiz_route():
+    try:
+        if not request.is_json:
+            return jsonify({'error': '請求格式錯誤'}), 400
+            
+        data = request.json
+        day = data.get('day', '').strip()
+        
+        if not day:
+            return jsonify({'error': '請選擇天數'}), 400
+        
+        # Log request
+        logger.info(f"Processing quiz request for day: {day}")
+        
+        result = generate_quiz(day)
+        
+        return jsonify({'result': result})
+        
+    except Exception as e:
+        logger.error(f"Error in generate_quiz_route: {str(e)}")
+        return jsonify({'error': '處理時發生錯誤，請稍後再試'}), 500
+
+@app.route('/generate-response', methods=['POST'])
+def generate_response_route():
+    try:
+        if not request.is_json:
+            return jsonify({'error': '請求格式錯誤'}), 400
+            
+        data = request.json
+        text = data.get('text', '').strip()
+        image = data.get('image', '')
+        tone = data.get('tone', '').strip()
+        
+        if not text or not tone:
+            return jsonify({'error': '請填寫所有必要欄位'}), 400
+        
+        if len(text) > 2000:
+            return jsonify({'error': '輸入內容過長，請限制在2000字元以內'}), 400
+        
+        # Log request
+        logger.info(f"Processing response request - Length: {len(text)}, Tone: {tone}")
+        
+        result = generate_effective_response(text, image, tone)
+        
+        return jsonify({'result': result})
+        
+    except Exception as e:
+        logger.error(f"Error in generate_response_route: {str(e)}")
         return jsonify({'error': '處理時發生錯誤，請稍後再試'}), 500
 
 @app.errorhandler(500)
