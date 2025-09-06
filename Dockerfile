@@ -7,7 +7,7 @@ WORKDIR /app
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV FLASK_APP=main.py
+ENV FLASK_APP=main_production.py
 ENV FLASK_ENV=production
 
 # Install system dependencies
@@ -38,4 +38,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:$PORT/ || exit 1
 
 # Run the application
-CMD ["python", "main.py"]
+CMD ["python", "main_production.py"]
