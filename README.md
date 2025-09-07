@@ -1,13 +1,17 @@
-# CKNbook
+# CKNbook - AI-Powered Nutrition Learning Platform
 
-A Flask-based web application that uses Google's Gemini AI to rewrite text in different tones and languages.
+A Flask-based web application that uses Google's Gemini AI to provide interactive nutrition education based on "吃的營養科學觀" (The Science of Nutrition).
 
-## Features
+## 🎯 Features
 
-- Rewrite text in multiple tones (輕鬆, 溫暖, 專業, 謙虛, 幽默)
-- Support for multiple languages (廣東話, 普通話, 英文, 西班牙文)
-- Generate three different text variations
-- Copy-to-clipboard functionality
+- **Page 1**: Content fine-tuning with nutrition knowledge integration
+- **Page 2**: Interactive quiz generation for nutrition topics (Days 1-21)
+- **Page 3**: Effective response generation with tone selection
+- **Page 4**: Cantonese encouragement feedback with 3 options
+
+## 📚 Documentation
+
+For detailed project documentation, see [PROJECT_DOCUMENTATION.md](./PROJECT_DOCUMENTATION.md)
 
 ## Quick Start
 
